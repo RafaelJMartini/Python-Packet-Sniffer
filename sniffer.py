@@ -7,16 +7,19 @@ from networking.tcp import TCP
 from networking.udp import UDP
 from networking.pcap import Pcap
 from networking.http import HTTP
+from networking.quic import QUIC
 
 TAB_1 = '\t - '
 TAB_2 = '\t\t - '
 TAB_3 = '\t\t\t - '
 TAB_4 = '\t\t\t\t - '
+TABS = [TAB_1,TAB_2,TAB_3,TAB_4]
 
 DATA_TAB_1 = '\t   '
 DATA_TAB_2 = '\t\t   '
 DATA_TAB_3 = '\t\t\t   '
 DATA_TAB_4 = '\t\t\t\t   '
+DATA_TABS = [DATA_TAB_1,DATA_TAB_2,DATA_TAB_3,DATA_TAB_4]
 
 
 def main():
@@ -27,56 +30,59 @@ def main():
         raw_data, addr = conn.recvfrom(65535)
         pcap.write(raw_data)
         eth = Ethernet(raw_data)
-
-        print('\nEthernet Frame:')
-        print(TAB_1 + 'Destination: {}, Source: {}, Protocol: {}'.format(eth.dest_mac, eth.src_mac, eth.proto))
+        eth.print(TABS)
 
         # IPv4
         if eth.proto == 8:
             ipv4 = IPv4(eth.data)
-            print(TAB_1 + 'IPv4 Packet:')
-            print(TAB_2 + 'Version: {}, Header Length: {}, TTL: {},'.format(ipv4.version, ipv4.header_length, ipv4.ttl))
-            print(TAB_2 + 'Protocol: {}, Source: {}, Target: {}'.format(ipv4.proto, ipv4.src, ipv4.target))
+            ipv4.print(TABS)
 
             # ICMP
             if ipv4.proto == 1:
                 icmp = ICMP(ipv4.data)
-                print(TAB_1 + 'ICMP Packet:')
-                print(TAB_2 + 'Type: {}, Code: {}, Checksum: {},'.format(icmp.type, icmp.code, icmp.checksum))
-                print(TAB_2 + 'ICMP Data:')
-                print(format_multi_line(DATA_TAB_3, icmp.data))
+                icmp.print(TABS, DATA_TABS)
+
 
             # TCP
             elif ipv4.proto == 6:
                 tcp = TCP(ipv4.data)
-                print(TAB_1 + 'TCP Segment:')
-                print(TAB_2 + 'Source Port: {}, Destination Port: {}'.format(tcp.src_port, tcp.dest_port))
-                print(TAB_2 + 'Sequence: {}, Acknowledgment: {}'.format(tcp.sequence, tcp.acknowledgment))
-                print(TAB_2 + 'Flags:')
-                print(TAB_3 + 'URG: {}, ACK: {}, PSH: {}'.format(tcp.flag_urg, tcp.flag_ack, tcp.flag_psh))
-                print(TAB_3 + 'RST: {}, SYN: {}, FIN:{}'.format(tcp.flag_rst, tcp.flag_syn, tcp.flag_fin))
+                tcp.print(TABS)
 
                 if len(tcp.data) > 0:
 
                     # HTTP
                     if tcp.src_port == 80 or tcp.dest_port == 80:
-                        print(TAB_2 + 'HTTP Data:')
+
+                        print(TABS[1] + 'HTTP Data:')
                         try:
                             http = HTTP(tcp.data)
-                            http_info = str(http.data).split('\n')
-                            for line in http_info:
-                                print(DATA_TAB_3 + str(line))
+                            http.print(TABS)
                         except:
-                            print(format_multi_line(DATA_TAB_3, tcp.data))
+                            tcp.print_data(TABS,DATA_TABS)
+
                     else:
-                        print(TAB_2 + 'TCP Data:')
-                        print(format_multi_line(DATA_TAB_3, tcp.data))
+                        tcp.print_data(TABS,DATA_TABS)
+
+
 
             # UDP
             elif ipv4.proto == 17:
                 udp = UDP(ipv4.data)
-                print(TAB_1 + 'UDP Segment:')
-                print(TAB_2 + 'Source Port: {}, Destination Port: {}, Length: {}'.format(udp.src_port, udp.dest_port, udp.size))
+                udp.print(TABS)
+                
+                # QUIC
+                if udp.src_port == 443 or udp.dest_port == 443:
+                    first_byte = udp.data[0]
+                    fixed_bit = (first_byte & 0x40) >> 6
+                    if fixed_bit != 1:
+                        print(TAB_2 + 'Not QUIC (invalid fixed bit)')
+                        return
+                    quic = QUIC(udp.data)
+
+                    print(TAB_2 + 'QUIC Packet:')
+                    print(TAB_3 + f'Version: {quic.version}')
+                    print(TAB_3 + f'Packet Type: {quic.packet_type}')
+                    print(TAB_3 + f"Header Form: {'Long' if quic.header_form else 'Short'}")
 
             # Other IPv4
             else:

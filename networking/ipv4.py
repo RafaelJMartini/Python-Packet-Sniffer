@@ -15,3 +15,8 @@ class IPv4:
     # Returns properly formatted IPv4 address
     def ipv4(self, addr):
         return '.'.join(map(str, addr))
+
+    def print(self, TABS):
+        print(TABS[0] + 'IPv4 Packet:')
+        print(TABS[1] + 'Version: {}, Header Length: {}, TTL: {},'.format(self.version, self.header_length, self.ttl))
+        print(TABS[1] + 'Protocol: {}, Source: {}, Target: {}'.format(self.proto, self.src, self.target))
