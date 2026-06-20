@@ -8,8 +8,7 @@ from networking.udp import UDP
 from networking.pcap import Pcap
 from networking.http import HTTP
 from networking.quic import QUIC
-
-QUIC_MODE = True
+from report import QUICStats
 
 TAB_1 = '\t - '
 TAB_2 = '\t\t - '
@@ -40,31 +39,30 @@ def main():
             ipv4.print(TABS)
 
             # ICMP
-            if not QUIC_MODE:
-                if ipv4.proto == 1:
-                    icmp = ICMP(ipv4.data)
-                    icmp.print(TABS, DATA_TABS)
+            if ipv4.proto == 1:
+                icmp = ICMP(ipv4.data)
+                icmp.print(TABS, DATA_TABS)
 
 
                 # TCP
-                elif ipv4.proto == 6:
-                    tcp = TCP(ipv4.data)
-                    tcp.print(TABS)
+            elif ipv4.proto == 6:
+                tcp = TCP(ipv4.data)
+                tcp.print(TABS)
 
-                    if len(tcp.data) > 0:
+                if len(tcp.data) > 0:
 
-                        # HTTP
-                        if tcp.src_port == 80 or tcp.dest_port == 80:
+                    # HTTP
+                    if tcp.src_port == 80 or tcp.dest_port == 80:
 
-                            print(TABS[1] + 'HTTP Data:')
-                            try:
-                                http = HTTP(tcp.data)
-                                http.print(TABS)
-                            except:
-                                tcp.print_data(TABS,DATA_TABS)
-
-                        else:
+                        print(TABS[1] + 'HTTP Data:')
+                        try:
+                            http = HTTP(tcp.data)
+                            http.print(TABS)
+                        except:
                             tcp.print_data(TABS,DATA_TABS)
+
+                    else:
+                        tcp.print_data(TABS,DATA_TABS)
 
             # UDP
             elif ipv4.proto == 17:
@@ -77,15 +75,18 @@ def main():
                     fixed_bit = (first_byte & 0x40) >> 6
                     if fixed_bit != 1:
                         print(TAB_2 + 'Not QUIC (invalid fixed bit)')
-                        return
+                        continue
                     quic = QUIC(udp.data)
 
-                    print(TAB_2 + 'QUIC Packet:')
-                    print(TAB_3 + f'Version: {quic.version}')
-                    print(TAB_3 + f'Packet Type: {quic.packet_type}')
-                    print(TAB_3 + f"Header Form: {'Long' if quic.header_form else 'Short'}")
-
+                    QUICStats.update(quic)
+                    QUICStats.save()
                     if quic.header_form:
+                        print(TAB_2 + 'QUIC Packet:')
+                        print(TAB_3 + f'QUIC Version: {quic.version}')
+                        print(TAB_3 + f'Packet Type: {quic.packet_type}')
+                        print(TAB_3 + f"Header Form: {'Long' if quic.header_form else 'Short'}")
+
+                        
                         print(TAB_3 + f'DCID Lenght: {quic.dest_conn_id_len}')
                         print(TAB_3 + f'SCID Length: {quic.src_conn_id_len}')
 

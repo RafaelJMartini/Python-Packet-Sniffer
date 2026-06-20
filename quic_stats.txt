@@ -1,0 +1,9 @@
+=== QUIC REPORT ===
+
+Total QUIC: 2106
+Long Header: 95 (4.51%)
+Short Header: 2011 (95.49%)
+Initial: 72
+Handshake: 17
+0-RTT: 6
+Retry: 0
