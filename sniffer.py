@@ -80,13 +80,13 @@ def main():
 
                     QUICStats.update(quic)
                     QUICStats.save()
+                    
+                    quic.print(TABS)
+                    print(TAB_2 + 'QUIC Packet:')
+                    print(TAB_3 + f'QUIC Version: {quic.version}')
+                    print(TAB_3 + f'Packet Type: {quic.packet_type}')
+                    print(TAB_3 + f"Header Form: {'Long' if quic.header_form else 'Short'}")
                     if quic.header_form:
-                        print(TAB_2 + 'QUIC Packet:')
-                        print(TAB_3 + f'QUIC Version: {quic.version}')
-                        print(TAB_3 + f'Packet Type: {quic.packet_type}')
-                        print(TAB_3 + f"Header Form: {'Long' if quic.header_form else 'Short'}")
-
-                        
                         print(TAB_3 + f'DCID Lenght: {quic.dest_conn_id_len}')
                         print(TAB_3 + f'SCID Length: {quic.src_conn_id_len}')
 
