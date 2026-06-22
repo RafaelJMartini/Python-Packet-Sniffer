@@ -59,8 +59,8 @@ class QUIC:
             print(TABS[2] + f'Version: {self.version}')
             print(TABS[2] + f'Packet Type: {self.packet_type}')
             print(TABS[2] + f"Header Form: Long")
-            print(TABS[2] + f'DCID Lenght: {self.dest_conn_id_len}')
-            print(TABS[2] + f'SCID Length: {self.src_conn_id_len}')
+            print(TABS[2] + f'DCID ID / Lenght: {self.dest_conn_id.hex()} / {self.dest_conn_id_len}')
+            print(TABS[2] + f'SCID ID / Length: {self.src_conn_id.hex()} / {self.src_conn_id_len}')
 
         else: # Short
             print(TABS[1] + 'QUIC Packet (Short):')
