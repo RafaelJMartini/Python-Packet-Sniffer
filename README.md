@@ -1,4 +1,4 @@
-# Python Packet Sniffer 📡
+# Python Packet Sniffer
 
 > **Nota:** Este script foi desenvolvido exclusivamente para sistemas **Linux** e requer privilégios de superusuário (`sudo`).
 
