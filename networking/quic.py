@@ -51,7 +51,7 @@ class QUIC:
         self.packet_type = "Short Header"
         self.version = "N/A"
         self.key_phase = (self.first_byte & 0x04) >> 2
-        self.spin = (data[0] & 0x20) >> 5
+        self.spin = (self.first_byte & 0x20) >> 5
 
     def print(self,TABS):
         if self.header_form: # Long
